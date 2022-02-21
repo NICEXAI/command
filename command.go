@@ -1,13 +1,13 @@
 package command
 
 import (
-	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"strings"
 )
 
-//Cmd represents an external command being prepared or run
+// Cmd represents an external command being prepared or run
 type Cmd struct {
 	cmd *exec.Cmd
 }
@@ -20,7 +20,7 @@ func (c *Cmd) Stop() error {
 	return c.cmd.Process.Kill()
 }
 
-//Run that can output logs
+// Run that can output logs
 func Run(name string, arg ...string) (*Cmd, error) {
 	var (
 		stdout io.ReadCloser
@@ -50,8 +50,8 @@ func Run(name string, arg ...string) (*Cmd, error) {
 	return &Cmd{cmd: command}, nil
 }
 
-func outputLog(reader io.ReadCloser) error {
-	buf := make([]byte, 1024, 1024)
+func outputLog(reader io.ReadCloser) {
+	buf := make([]byte, 1024)
 	for {
 		num, err := reader.Read(buf)
 		logByte := buf[:num]
@@ -60,11 +60,10 @@ func outputLog(reader io.ReadCloser) error {
 			if err == io.EOF || strings.Contains(err.Error(), "closed") {
 				err = nil
 			}
-			return err
+			break
 		}
 		if num > 0 {
-			fmt.Println(string(logByte))
+			log.Println(string(logByte))
 		}
 	}
-	return nil
 }
